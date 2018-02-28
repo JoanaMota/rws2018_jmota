@@ -120,6 +120,12 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+add_executable(player_jmota_node src/player_jmota_node.cpp)
+target_link_libraries(player_jmota_node ${catkin_LIBRARIES})
+
+add_executable(hello src/hello.cpp)
+target_link_libraries(hello ${catkin_LIBRARIES})
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/player_jmota.cpp
