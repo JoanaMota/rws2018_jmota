@@ -8,9 +8,11 @@ project(player_jmota)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  tf
   roscpp
   rospy
   std_msgs
+  rws2018_libs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -123,8 +125,8 @@ include_directories(
 
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/player_jmota.cpp
+# add_library(
+#   src/${PROJECT_NAME}/team.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -140,6 +142,7 @@ add_executable(hello src/hello.cpp)
 
 target_link_libraries(player_jmota_node ${catkin_LIBRARIES})
 target_link_libraries(hello ${catkin_LIBRARIES})
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
