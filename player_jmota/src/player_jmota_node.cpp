@@ -149,7 +149,7 @@ int main()
     rws_jmota::Team team("blue");
 
 
-    team.players.push_back("moliveira");
+    team.players.push_back("jmota");
     team.players.push_back("vsantos");
       
     team.printTeamInfo();
