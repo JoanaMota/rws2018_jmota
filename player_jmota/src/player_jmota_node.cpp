@@ -148,6 +148,7 @@ int main()
     //Creating an instance of class Team
     rws_jmota::Team team("blue");
 
+
     team.players.push_back("moliveira");
     team.players.push_back("vsantos");
       
