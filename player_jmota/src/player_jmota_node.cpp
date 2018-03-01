@@ -124,10 +124,15 @@ namespace rws_jmota
 
         boost::shared_ptr<Team> red_team;
         boost::shared_ptr<Team> green_team;
-        boost::shared_ptr<Team> blue_team;                                                                                                            
+        boost::shared_ptr<Team> blue_team;   
+
+        boost::shared_ptr<Team> my_team;
+        boost::shared_ptr<Team> my_preys;
+        boost::shared_ptr<Team> my_hunters;   
+
         tf::TransformBroadcaster br; //declare the broadcaster   
 
-        MyPlayer(string argin_name, string argin_team): Player(argin_name)
+        MyPlayer(string argin_name, string argin_team/*disregard*/): Player(argin_name)
         {
             red_team = boost::shared_ptr<Team> (new Team("red"));
 
@@ -135,7 +140,32 @@ namespace rws_jmota
 
             blue_team = boost::shared_ptr<Team> (new Team("blue"));
 
-            setTeamName(argin_team);
+            //ver a que equipa pertenço
+            if(red_team->playerBelongsToTeam(name))
+            {
+                my_team = red_team;
+                my_preys = green_team;
+                my_hunters = blue_team;
+                setTeamName("red");
+
+            }
+            else if(green_team->playerBelongsToTeam(name))
+            {
+                my_team = green_team;
+                my_preys = blue_team;
+                my_hunters = red_team;
+                setTeamName("green");
+
+            }
+            else if(blue_team->playerBelongsToTeam(name))
+            {
+                my_team = blue_team;
+                my_preys = red_team;
+                my_hunters = green_team;
+                setTeamName("blue");
+
+            }
+
             printReport();
         }
 
