@@ -130,7 +130,8 @@ namespace rws_jmota
         boost::shared_ptr<Team> my_preys;
         boost::shared_ptr<Team> my_hunters;   
 
-        tf::TransformBroadcaster br; //declare the broadcaster   
+        tf::TransformBroadcaster br; //declare the broadcaster 
+        float x, y;  
 
         MyPlayer(string argin_name, string argin_team/*disregard*/): Player(argin_name)
         {
@@ -171,8 +172,10 @@ namespace rws_jmota
 
         void move(void)
         {
-            tf::Transform transform;    //declare the transformation object 
-            transform.setOrigin( tf::Vector3(5,5, 0.0) );   
+            tf::Transform transform;    //declare the transformation object
+            x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+            y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+            transform.setOrigin( tf::Vector3(x,y, 0.0) );   
             tf::Quaternion q;   
             q.setRPY(0, 0, M_PI/3); 
             transform.setRotation(q);   
