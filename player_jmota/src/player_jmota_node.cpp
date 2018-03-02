@@ -9,6 +9,7 @@
 #include <rws2018_libs/team.h>
 
 #include <rws2018_msgs/MakeAPlay.h>
+#include <visualization_msgs/Marker.h>
 
   
 using namespace std;                                                                               
@@ -89,6 +90,7 @@ namespace rws_jmota
         float rrx, rry;
         ros::NodeHandle n;
         boost::shared_ptr<ros::Subscriber> sub;
+        boost::shared_ptr<ros::Publisher> pub;
         tf::Transform transform;    //declare the transformation object
 
         
@@ -128,6 +130,9 @@ namespace rws_jmota
 
             sub = boost::shared_ptr<ros::Subscriber> (new ros::Subscriber());
             *sub = n.subscribe("/make_a_play", 100, &MyPlayer::move, this);
+
+            pub = boost::shared_ptr<ros::Publisher> (new ros::Publisher());   
+            *pub = n.advertise<visualization_msgs::Marker>("/bocas", 0);
             
             // move to a random place for the first time
             srand(5975*time(NULL));
@@ -160,6 +165,33 @@ namespace rws_jmota
             double displacementx = 6; // computed using AI
             double delta_alfa = M_PI/2;
             double displacementy = 0.2; // computed using AI
+
+            visualization_msgs::Marker marker;
+            // Set the frame ID and timestamp.  See the TF tutorials for information on these.
+            marker.header.frame_id = "jmota";
+            marker.header.stamp = ros::Time::now();
+
+            // Set the namespace and id for this marker.  This serves to create a unique ID
+            // Any marker sent with the same namespace and id will overwrite the old one
+            marker.ns = "jmota";
+            marker.id = 0;
+
+            // Set the marker type.  Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
+            marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+
+            // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
+            marker.action = visualization_msgs::Marker::ADD;
+
+            // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the headermarker.pose.position.x = 1;
+            marker.pose.orientation.w = 1.0;
+            marker.scale.z = 0.3;
+            marker.color.a = 1.0; // Don't forget to set the alpha!
+            marker.color.r = 0.0;
+            marker.color.g = 1.0;
+            marker.color.b = 0.0;
+            marker.text = "Still living la vida loca ...";
+            marker.lifetime = ros::Duration(3);
+            pub-> publish( marker );
 
             // ------ CONSTRAINS PART
             double displacementx_max = msg->dog;
@@ -239,6 +271,9 @@ int main(int argc, char **argv)
 
     ros::NodeHandle n;
 
+    ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+
+    
    // ros::Subscriber sub = node.subscribe(turtle_name+"/pose", 10, &poseCallback);
     // ros::Rate loop_rate(10); //Number of messages per second
     // while (ros::ok())
