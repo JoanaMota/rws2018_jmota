@@ -3,6 +3,7 @@
 #include <vector>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
 
 //Boost includes
 #include <boost/shared_ptr.hpp>
@@ -11,8 +12,12 @@
 #include <rws2018_msgs/MakeAPlay.h>
 #include <visualization_msgs/Marker.h>
 
+#define DEFAULT_TIME 0.1
+
   
-using namespace std;                                                                               
+using namespace std;
+using namespace ros;
+using namespace tf;                                                                               
 
 /**
  * @brief The namespace of this lib
@@ -92,7 +97,7 @@ namespace rws_jmota
         boost::shared_ptr<ros::Subscriber> sub;
         boost::shared_ptr<ros::Publisher> pub;
         tf::Transform transform;    //declare the transformation object
-
+        tf::TransformListener listener;
         
         MyPlayer(string argin_name, string argin_team/*disregard*/): Player(argin_name)
         {
@@ -154,6 +159,27 @@ namespace rws_jmota
             ROS_INFO("Warping to x=%f y=%f a=%f", x, y, alfa);  
         }
 
+        double getAngleToPlayer(string other_player, double time_to_wait=DEFAULT_TIME)
+        {
+            StampedTransform t; //The transform object
+            Time now = Time(0);
+
+            try
+            {
+                listener.waitForTransform("jmota",other_player, now, Duration(time_to_wait));
+                listener.lookupTransform("jmota",other_player, now, t);
+
+            }
+            catch (TransformException& ex)
+            {
+                ROS_ERROR("%s",ex.what());
+                return NAN;
+            }
+
+            return atan2(t.getOrigin().y(),t.getOrigin().x());
+
+        }
+
         void move(const rws2018_msgs::MakeAPlay::ConstPtr& msg)
         {
 
@@ -162,8 +188,21 @@ namespace rws_jmota
             double a = 0;
 
             // ------  AI ------
+
+            //Find Prey
+            double min_distance = 98888;
+            string player_to_hunt;
+
+            // for (size_t i=0; i<my_preys->player_names.size(); i++)
+            // {
+            //     double dist =getDistanceToPlayer
+            // }
+
             double displacementx = 6; // computed using AI
-            double delta_alfa = M_PI/2;
+            double delta_alfa = getAngleToPlayer("lsarmento");
+
+            if (isnan(delta_alfa)){delta_alfa=0;}
+
             double displacementy = 0.2; // computed using AI
 
             visualization_msgs::Marker marker;
@@ -183,13 +222,15 @@ namespace rws_jmota
             marker.action = visualization_msgs::Marker::ADD;
 
             // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the headermarker.pose.position.x = 1;
+            marker.pose.position.x = 0.02;
+            marker.pose.position.y = 0.02;
             marker.pose.orientation.w = 1.0;
             marker.scale.z = 0.7;
             marker.color.a = 1.0; // Don't forget to set the alpha!
             marker.color.r = 0.0;
             marker.color.g = 1.0;
             marker.color.b = 0.0;
-            marker.text = "Still living la vida loca ...";
+            marker.text = "After lsarmento";
             marker.lifetime = ros::Duration(3);
             pub-> publish( marker );
 
