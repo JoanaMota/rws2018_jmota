@@ -8,6 +8,8 @@
 #include <boost/shared_ptr.hpp>
 #include <rws2018_libs/team.h>
 
+#include <rws2018_msgs/MakeAPlay.h>
+
   
 using namespace std;                                                                               
 
@@ -83,9 +85,12 @@ namespace rws_jmota
         boost::shared_ptr<Team> my_hunters;   
 
         tf::TransformBroadcaster br; //declare the broadcaster 
-        float x=-5.0, y=5.0;  
-        float rx, ry;
+        // float x=-5.0, y=5.0;  
+        // float rx, ry;
+        ros::NodeHandle n;
+        boost::shared_ptr<ros::Subscriber> sub;
 
+        
         MyPlayer(string argin_name, string argin_team/*disregard*/): Player(argin_name)
         {
             red_team = boost::shared_ptr<Team> (new Team("red"));
@@ -120,21 +125,49 @@ namespace rws_jmota
 
             }
 
+            sub = boost::shared_ptr<ros::Subscriber> (new ros::Subscriber());
+            *sub = n.subscribe("/make_a_play", 100, &MyPlayer::move, this);
+            
+            // move to a random place for the first time
+            warp(randomizePosition(), randomizePosition(),M_PI/2);
+
             printReport();
         }
 
-        void move(void)
+
+        void warp(double x, double y, double alfa)
         {
             tf::Transform transform;    //declare the transformation object
-            rx = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-            ry = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-
             transform.setOrigin( tf::Vector3(x,y, 0.0) );
+            tf::Quaternion q;   
+            q.setRPY(0, 0, alfa); 
+            transform.setRotation(q);   
+            br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "jmota"));
+            ROS_INFO("Warping to x=%f y=%f a=%f", x, y, alfa);  
+        }
 
-            if (x>=-5.0 && x<0.0){ x=x-rx;}
-            else if (x<-5.0) {x=x+3.0;}
-            if (y<=5.0 && y>0.0){ y=y+ry;}
-            else if (y>5.0) {y=y-3.0;}
+        void move(const rws2018_msgs::MakeAPlay::ConstPtr& msg)
+        {
+            tf::Transform transform;    //declare the transformation object
+            // rx = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+            // ry = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+
+            double x = transform.getOrigin().x();
+            double y = transform.getOrigin().y();
+            double a = 0;
+
+
+            // if (x>=-5.0 && x<=0.0){ x+=0.01;}
+            // else if (x<-5.0) {x=x+3.0;}
+            // else {x+=0.01;}
+            // if (y<=5.0 && y>=0.0){ y+=0.01;}
+            // else if (y>5.0) {y=y-3.0;}
+            // else {y+=0.01;}
+            
+            if (x<=5.0)
+            {
+                transform.setOrigin( tf::Vector3(x+=0.01,y+=0.01, 0.0) );
+            }
             
 
 
@@ -199,13 +232,13 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
 
    // ros::Subscriber sub = node.subscribe(turtle_name+"/pose", 10, &poseCallback);
-    ros::Rate loop_rate(10); //Number of messages per second
-    while (ros::ok())
-    {
-        my_player.move();
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
+    // ros::Rate loop_rate(10); //Number of messages per second
+    // while (ros::ok())
+    // {
+    //     my_player.move();
+    //     ros::spinOnce();
+    //     loop_rate.sleep();
+    // }
 
     ros::spin();
 }
