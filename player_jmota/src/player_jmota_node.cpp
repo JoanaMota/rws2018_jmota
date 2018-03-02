@@ -147,7 +147,7 @@ namespace rws_jmota
         void printReport()
         {
             //cout << "My name is " << name <<  " and my team is " << getTeamName() << endl;
-            ROS_INFO("My name is %s and my team is %s",name.c_str(), getTeamName().c_str());
+            ROS_INFO("My name is %s and my team is %s and I am trying to move.",name.c_str(), getTeamName().c_str());
             
         }
     };
