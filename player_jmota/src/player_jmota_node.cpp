@@ -157,18 +157,21 @@ namespace rws_jmota
             double a = 0;
 
             // ------  AI ------
-            double displacement = 6; // computed using AI
+            double displacementx = 6; // computed using AI
             double delta_alfa = M_PI/2;
+            double displacementy = 0.2; // computed using AI
 
             // ------ CONSTRAINS PART
-            double displacement_max = msg->dog;
-            displacement > displacement_max ? displacement = displacement_max : displacement = displacement;
+            double displacementx_max = msg->dog;
+            displacementx > displacementx_max ? displacementx = displacementx_max : displacementx = displacementx;
+            double displacementy_max = msg->cat;
+            displacementy > displacementy_max ? displacementy = displacementy_max : displacementy = displacementy;
             
             double delta_alfa_max = M_PI/30;
             fabs(delta_alfa) > fabs(delta_alfa_max) ? delta_alfa = delta_alfa_max * delta_alfa / fabs(delta_alfa) : delta_alfa =delta_alfa;
 
             tf::Transform my_move_Tran;
-            my_move_Tran.setOrigin( tf::Vector3(displacement,0.0, 0.0) );
+            my_move_Tran.setOrigin( tf::Vector3(displacementx,displacementy, 0.0) );
             tf::Quaternion q;   
             q.setRPY(0, 0, delta_alfa); 
             my_move_Tran.setRotation(q);   
