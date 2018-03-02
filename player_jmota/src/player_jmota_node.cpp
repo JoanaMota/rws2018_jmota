@@ -175,6 +175,7 @@ namespace rws_jmota
             tf::Transform transform;    //declare the transformation object
             x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
             y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+            
             transform.setOrigin( tf::Vector3(x,y, 0.0) );   
             tf::Quaternion q;   
             q.setRPY(0, 0, M_PI/3); 
