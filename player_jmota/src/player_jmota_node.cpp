@@ -184,7 +184,7 @@ namespace rws_jmota
 
             // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the headermarker.pose.position.x = 1;
             marker.pose.orientation.w = 1.0;
-            marker.scale.z = 0.3;
+            marker.scale.z = 0.4;
             marker.color.a = 1.0; // Don't forget to set the alpha!
             marker.color.r = 0.0;
             marker.color.g = 1.0;
