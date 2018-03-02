@@ -37,7 +37,8 @@ namespace rws_jmota
                 case 2: 
                     return setTeamName("blue");  break;
                 default: 
-                    cout << "wrong team index given. Cannot set team" << endl; break;
+                    ROS_WARN("wrong team index given. Cannot set team");
+                    break;
             }
         }
 
@@ -51,7 +52,8 @@ namespace rws_jmota
             }
             else
             {
-                cout << "cannot set team name to " << argin_team << endl;
+                ROS_WARN("cannot set team name to %s",argin_team.c_str());
+                // cout << "cannot set team name to " << argin_team << endl;
                 return 0;
             }
         }
@@ -175,7 +177,7 @@ namespace rws_jmota
             tf::Transform transform;    //declare the transformation object
             x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
             y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-            
+
             transform.setOrigin( tf::Vector3(x,y, 0.0) );   
             tf::Quaternion q;   
             q.setRPY(0, 0, M_PI/3); 
@@ -185,7 +187,9 @@ namespace rws_jmota
 
         void printReport()
         {
-            cout << "My name is " << name <<  " and my team is " << getTeamName() << endl;
+            //cout << "My name is " << name <<  " and my team is " << getTeamName() << endl;
+            ROS_INFO("My name is %s and my team is %s",name.c_str(), getTeamName().c_str());
+            
         }
     };
 
@@ -228,10 +232,10 @@ int main(int argc, char **argv)
     // cout << "read test_param with value " << test_param_value << endl;
 
 
-    if (my_player.red_team->playerBelongsToTeam("amartins"))
-    {
-        cout << "a joana esta na equipa certa" << endl;
-    };
+    // if (my_player.red_team->playerBelongsToTeam("amartins"))
+    // {
+    //     cout << "a joana esta na equipa certa" << endl;
+    // };
 
     ros::NodeHandle n;
 
