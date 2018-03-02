@@ -89,6 +89,7 @@ namespace rws_jmota
         // float rx, ry;
         ros::NodeHandle n;
         boost::shared_ptr<ros::Subscriber> sub;
+        tf::Transform transform;    //declare the transformation object
 
         
         MyPlayer(string argin_name, string argin_team/*disregard*/): Player(argin_name)
@@ -129,7 +130,10 @@ namespace rws_jmota
             *sub = n.subscribe("/make_a_play", 100, &MyPlayer::move, this);
             
             // move to a random place for the first time
-            warp(randomizePosition(), randomizePosition(),M_PI/2);
+            srand(5975*time(NULL));
+            double rx = static_cast <float> (rand()) / static_cast <float> (RAND_MAX/5.0);
+            double ry = static_cast <float> (rand()) / static_cast <float> (RAND_MAX/5.0);
+            warp(rx,ry,M_PI/2);
 
             printReport();
         }
@@ -137,7 +141,6 @@ namespace rws_jmota
 
         void warp(double x, double y, double alfa)
         {
-            tf::Transform transform;    //declare the transformation object
             transform.setOrigin( tf::Vector3(x,y, 0.0) );
             tf::Quaternion q;   
             q.setRPY(0, 0, alfa); 
@@ -148,9 +151,6 @@ namespace rws_jmota
 
         void move(const rws2018_msgs::MakeAPlay::ConstPtr& msg)
         {
-            tf::Transform transform;    //declare the transformation object
-            // rx = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-            // ry = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
             double x = transform.getOrigin().x();
             double y = transform.getOrigin().y();
@@ -164,11 +164,11 @@ namespace rws_jmota
             // else if (y>5.0) {y=y-3.0;}
             // else {y+=0.01;}
             
-            if (x<=5.0)
-            {
-                transform.setOrigin( tf::Vector3(x+=0.01,y+=0.01, 0.0) );
-            }
+
+            transform.setOrigin( tf::Vector3(x+=0.01,y+=0.02, 0.0) );
             
+            
+
 
 
             tf::Quaternion q;   
