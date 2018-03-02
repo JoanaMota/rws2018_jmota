@@ -86,7 +86,7 @@ namespace rws_jmota
 
         tf::TransformBroadcaster br; //declare the broadcaster 
         // float x=-5.0, y=5.0;  
-        // float rx, ry;
+        float rrx, rry;
         ros::NodeHandle n;
         boost::shared_ptr<ros::Subscriber> sub;
         tf::Transform transform;    //declare the transformation object
@@ -156,24 +156,29 @@ namespace rws_jmota
             double y = transform.getOrigin().y();
             double a = 0;
 
+            // ------  AI ------
+            double displacement = 6; // computed using AI
+            double delta_alfa = M_PI/2;
 
-            // if (x>=-5.0 && x<=0.0){ x+=0.01;}
-            // else if (x<-5.0) {x=x+3.0;}
-            // else {x+=0.01;}
-            // if (y<=5.0 && y>=0.0){ y+=0.01;}
-            // else if (y>5.0) {y=y-3.0;}
-            // else {y+=0.01;}
+            // ------ CONSTRAINS PART
+            double displacement_max = msg->dog;
+            displacement > displacement_max ? displacement = displacement_max : displacement = displacement;
             
+            double delta_alfa_max = M_PI/30;
+            fabs(delta_alfa) > fabs(delta_alfa_max) ? delta_alfa = delta_alfa_max * delta_alfa / fabs(delta_alfa) : delta_alfa =delta_alfa;
 
-            transform.setOrigin( tf::Vector3(x+=0.01,y+=0.02, 0.0) );
-            
-            
-
-
-
+            tf::Transform my_move_Tran;
+            my_move_Tran.setOrigin( tf::Vector3(displacement,0.0, 0.0) );
             tf::Quaternion q;   
-            q.setRPY(0, 0, M_PI/3); 
-            transform.setRotation(q);   
+            q.setRPY(0, 0, delta_alfa); 
+            my_move_Tran.setRotation(q);   
+            
+            // rrx = static_cast <float> (rand()) / static_cast <float> (RAND_MAX/10.0);
+            // rry = static_cast <float> (rand()) / static_cast <float> (RAND_MAX/10.0);
+            // transform.setOrigin( tf::Vector3(x+=(rrx/100),y+=(rry/100), 0.0) );
+            
+            transform = transform * my_move_Tran;
+
             br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "jmota"));  
         }
 
