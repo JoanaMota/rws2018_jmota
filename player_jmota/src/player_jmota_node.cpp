@@ -69,56 +69,6 @@ namespace rws_jmota
 
     };
 
-    // /**
-    //  * @brief Class myPlayer extends class Player
-    //  */
-    // /**
-    //  * @brief Contains a description of a team
-    //  */
-    // class Team 
-    // {
-    //     public: 
-        
-    //     /**
-    //      * @brief Constructor
-    //      * @param team_name the team name
-    //      */
-    //     Team(string team_name)
-    //     {
-    //         name = team_name; 
-    //     }
-
-    //     /**
-    //      * @brief Prints the name of the team and the names of all its players
-    //      */
-    //     void printTeamInfo(void)
-    //     {
-    //         cout << "team is " << name << endl; 
-    //         cout << "team players are " << players[0] << " and " << players[1] << endl;  
-    //         //Write code here ...
-    //     }
-
-    //     /**
-    //      * @brief Checks if a player belongs to the team
-    //      * @param player_name the name of the player to check
-    //      * @return true or false, yes or no
-    //      */
-    //     bool playerBelongsToTeam(string player_name)
-    //     {
-    //         //write code here ...
-    //     }
-
-    //     /**
-    //      * @brief The team name
-    //      */
-    //     string name;
-
-    //     /**
-    //      * @brief A list of the team's player names
-    //      */
-    //     vector<string> players;
-
-    // };//end of class Team
 
     class MyPlayer: public Player
     {
@@ -133,7 +83,8 @@ namespace rws_jmota
         boost::shared_ptr<Team> my_hunters;   
 
         tf::TransformBroadcaster br; //declare the broadcaster 
-        float x, y;  
+        float x=-5.0, y=5.0;  
+        float rx, ry;
 
         MyPlayer(string argin_name, string argin_team/*disregard*/): Player(argin_name)
         {
@@ -175,10 +126,18 @@ namespace rws_jmota
         void move(void)
         {
             tf::Transform transform;    //declare the transformation object
-            x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-            y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+            rx = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+            ry = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-            transform.setOrigin( tf::Vector3(x,y, 0.0) );   
+            transform.setOrigin( tf::Vector3(x,y, 0.0) );
+
+            if (x>=-5.0 && x<0.0){ x=x-rx;}
+            else if (x<-5.0) {x=x+3.0;}
+            if (y<=5.0 && y>0.0){ y=y+ry;}
+            else if (y>5.0) {y=y-3.0;}
+            
+
+
             tf::Quaternion q;   
             q.setRPY(0, 0, M_PI/3); 
             transform.setRotation(q);   
