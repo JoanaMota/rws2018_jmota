@@ -176,8 +176,28 @@ namespace rws_jmota
                 return NAN;
             }
 
-            return atan2(t.getOrigin().y(),t.getOrigin().x());
+            return atan2(t.getOrigin().y(), t.getOrigin().x());
 
+        }
+        double getDistanceToPlayer(string other_player,double time_to_wait = DEFAULT_TIME) 
+        {
+            StampedTransform t; // The transform object
+            // Time now = Time::now(); //get the time
+            Time now = Time(0); // get the latest transform received
+
+            try 
+            {
+                listener.waitForTransform("jmota", other_player, now, Duration(time_to_wait));
+                listener.lookupTransform("jmota", other_player, now, t);
+            } 
+            catch (TransformException &ex) 
+            {
+                ROS_ERROR("%s", ex.what());
+                return NAN;
+            }
+
+            return sqrt(t.getOrigin().y() * t.getOrigin().y() +
+                        t.getOrigin().x() * t.getOrigin().x());
         }
 
         void move(const rws2018_msgs::MakeAPlay::ConstPtr& msg)
@@ -189,9 +209,22 @@ namespace rws_jmota
 
             // ------  AI ------
 
-            //Find Prey
-            double min_distance = 98888;
-            string player_to_hunt;
+            // Finding nearest prey
+            double min_distance = 99999;
+            string player_to_hunt = "no player";
+            for (size_t i = 0; i < my_preys->player_names.size(); i++)
+            {
+                double dist = getDistanceToPlayer(my_preys->player_names[i]);
+                if (isnan(dist)) 
+                {
+                   // dist=0;
+                } 
+                else if (dist < min_distance) 
+                {
+                    min_distance = dist;
+                    player_to_hunt = my_preys->player_names[i];
+                }
+            }
 
             // for (size_t i=0; i<my_preys->player_names.size(); i++)
             // {
@@ -199,7 +232,7 @@ namespace rws_jmota
             // }
 
             double displacementx = 6; // computed using AI
-            double delta_alfa = getAngleToPlayer("lsarmento");
+            double delta_alfa = getAngleToPlayer(player_to_hunt);
 
             if (isnan(delta_alfa)){delta_alfa=0;}
 
@@ -230,7 +263,7 @@ namespace rws_jmota
             marker.color.r = 0.0;
             marker.color.g = 1.0;
             marker.color.b = 0.0;
-            marker.text = "After lsarmento";
+            marker.text = "After " + player_to_hunt;
             marker.lifetime = ros::Duration(3);
             pub-> publish( marker );
 
@@ -244,7 +277,7 @@ namespace rws_jmota
             fabs(delta_alfa) > fabs(delta_alfa_max) ? delta_alfa = delta_alfa_max * delta_alfa / fabs(delta_alfa) : delta_alfa =delta_alfa;
 
             tf::Transform my_move_Tran;
-            my_move_Tran.setOrigin( tf::Vector3(displacementx,displacementy, 0.0) );
+            my_move_Tran.setOrigin( tf::Vector3(displacementx,0.0, 0.0) );
             tf::Quaternion q;   
             q.setRPY(0, 0, delta_alfa); 
             my_move_Tran.setRotation(q);   
