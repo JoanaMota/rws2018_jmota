@@ -96,6 +96,7 @@ namespace rws_jmota
         ros::NodeHandle n;
         boost::shared_ptr<ros::Subscriber> sub;
         boost::shared_ptr<ros::Publisher> pub;
+        boost::shared_ptr<ros::Publisher> pub2;
         tf::Transform transform;    //declare the transformation object
         tf::TransformListener listener;
         
@@ -107,7 +108,7 @@ namespace rws_jmota
 
             blue_team = boost::shared_ptr<Team> (new Team("blue"));
 
-            //ver a que equipa pertenço
+            //check which team i belong
             if(red_team->playerBelongsToTeam(name))
             {
                 my_team = red_team;
@@ -138,6 +139,9 @@ namespace rws_jmota
 
             pub = boost::shared_ptr<ros::Publisher> (new ros::Publisher());   
             *pub = n.advertise<visualization_msgs::Marker>("/bocas", 0);
+
+            pub2 = boost::shared_ptr<ros::Publisher> (new ros::Publisher());   
+            *pub2 = n.advertise<visualization_msgs::Marker>("/arena", 0);
             
             // move to a random place for the first time
             srand(5975*time(NULL));
@@ -212,9 +216,9 @@ namespace rws_jmota
             // Finding nearest prey
             double min_distance = 99999;
             string player_to_hunt = "no player";
-            for (size_t i = 0; i < my_preys->player_names.size(); i++)
+            for (size_t i = 0; i < msg->green_alive.size(); i++)
             {
-                double dist = getDistanceToPlayer(my_preys->player_names[i]);
+                double dist = getDistanceToPlayer(msg->green_alive[i]);
                 if (isnan(dist)) 
                 {
                    // dist=0;
@@ -222,17 +226,23 @@ namespace rws_jmota
                 else if (dist < min_distance) 
                 {
                     min_distance = dist;
-                    player_to_hunt = my_preys->player_names[i];
+                    player_to_hunt = msg->green_alive[i];
                 }
             }
 
-            // for (size_t i=0; i<my_preys->player_names.size(); i++)
+            // for (size_t i=0; i<msg->green_alive.size(); i++)
             // {
             //     double dist =getDistanceToPlayer
             // }
 
             double displacementx = 6; // computed using AI
             double delta_alfa = getAngleToPlayer(player_to_hunt);
+            double distance_to_center = sqrt(x*x + y*y);
+
+            if (distance_to_center > 7)
+            {
+                delta_alfa = getAngleToPlayer("world");
+            }
 
             if (isnan(delta_alfa)){delta_alfa=0;}
 
@@ -266,6 +276,79 @@ namespace rws_jmota
             marker.text = "After " + player_to_hunt;
             marker.lifetime = ros::Duration(3);
             pub-> publish( marker );
+
+            visualization_msgs::Marker line_strip, line_strip2;
+
+            line_strip.header.frame_id = line_strip2.header.frame_id = "world";
+            line_strip.header.stamp = line_strip2.header.stamp = ros::Time::now();
+            line_strip.ns = line_strip2.ns = "world";
+            line_strip.action = line_strip2.action = visualization_msgs::Marker::ADD;
+            line_strip.pose.orientation.w = line_strip2.pose.orientation.w = 1.0;
+
+
+            line_strip.id = 1;
+            line_strip2.id = 2;
+
+            line_strip.type = visualization_msgs::Marker::LINE_STRIP;
+            line_strip2.type = visualization_msgs::Marker::LINE_STRIP;
+
+
+            // LINE_STRIP/LINE_LIST markers use only the x component of scale, for the line width
+            line_strip.scale.x = 0.1;
+            line_strip2.scale.x = 0.1;
+
+
+            // Line strip is blue
+            line_strip.color.r = 1.0;
+            line_strip.color.g = 1.0;
+            line_strip.color.a = 1.0;
+            // Line strip is green
+            line_strip2.color.g = 1.0;
+            line_strip2.color.r = 1.0;
+            line_strip2.color.a = 1.0;
+
+
+
+            float radius = 8.0;
+            float x_a = radius;
+            float x_a2 = -radius;
+            // Create the vertices for the points and lines
+            geometry_msgs::Point p;
+            geometry_msgs::Point p2;
+            for (float i = 0.00; i < 2*radius; i+=0.01)
+            {
+            float y = sqrt(pow(radius,2.0)-pow(x_a,2.0));
+
+            // geometry_msgs::Point p;
+            p.x = x_a;
+
+            p.y = -y;
+            p.z = 0;
+            x_a-=0.01;
+
+            line_strip.points.push_back(p);
+
+            // geometry_msgs::Point p2; 
+            p2.x = x_a2;
+
+            p2.y = y;
+            p2.z = 0;
+            x_a2+=0.01;
+
+            line_strip2.points.push_back(p2);
+            }
+
+            p.x=-radius;
+            p.y=0;
+            p.z=0;
+            line_strip.points.push_back(p);
+            p2.x=radius;
+            p2.y=0;
+            p2.z=0;
+            line_strip2.points.push_back(p2);
+
+            pub2->publish(line_strip);
+            pub2->publish(line_strip2);
 
             // ------ CONSTRAINS PART
             double displacementx_max = msg->dog;
@@ -345,17 +428,11 @@ int main(int argc, char **argv)
 
     ros::NodeHandle n;
 
-    ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+    //ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+    //ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("/arena", 0);
 
-    
-   // ros::Subscriber sub = node.subscribe(turtle_name+"/pose", 10, &poseCallback);
-    // ros::Rate loop_rate(10); //Number of messages per second
-    // while (ros::ok())
-    // {
-    //     my_player.move();
-    //     ros::spinOnce();
-    //     loop_rate.sleep();
-    // }
+    //ros::Rate r(30);
+
 
     ros::spin();
 }
