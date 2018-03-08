@@ -10,6 +10,7 @@
 #include <rws2018_libs/team.h>
 
 #include <rws2018_msgs/MakeAPlay.h>
+#include <sensor_msgs/PointCloud2.h>
 #include <rws2018_msgs/GameQuery.h>
 #include <visualization_msgs/Marker.h>
 
@@ -96,14 +97,19 @@ namespace rws_jmota
         float rrx, rry;
         ros::NodeHandle n;
         boost::shared_ptr<ros::Subscriber> sub;
+        boost::shared_ptr<ros::Subscriber> sub_pcl;
         boost::shared_ptr<ros::Publisher> pub;
         boost::shared_ptr<ros::Publisher> pub2;
         boost::shared_ptr<ros::ServiceServer> game_query_srv;
         tf::Transform transform;    //declare the transformation object
         tf::TransformListener listener;
+        string my_point_cloud_guess;
+        uint8_t Data_pcl[];
         
         MyPlayer(string argin_name, string argin_team/*disregard*/): Player(argin_name)
         {
+            my_point_cloud_guess="banana";
+
             red_team = boost::shared_ptr<Team> (new Team("red"));
 
             green_team = boost::shared_ptr<Team> (new Team("green"));
@@ -139,6 +145,9 @@ namespace rws_jmota
             sub = boost::shared_ptr<ros::Subscriber> (new ros::Subscriber());
             *sub = n.subscribe("/make_a_play", 100, &MyPlayer::move, this); //fazer as callbacks do move
 
+            sub_pcl = boost::shared_ptr<ros::Subscriber> (new ros::Subscriber());
+            *sub_pcl = n.subscribe("/objet_point_cloud", 100, &MyPlayer::detectShape, this); //fazer as callbacks do move
+
             pub = boost::shared_ptr<ros::Publisher> (new ros::Publisher());   
             *pub = n.advertise<visualization_msgs::Marker>("/bocas", 0);
 
@@ -158,11 +167,21 @@ namespace rws_jmota
             printReport();
         }
 
+        void detectShape(const sensor_msgs::PointCloud2::ConstPtr& msg_pcl)
+        {
+            ROS_WARN("Received PointCloud");
+            //Data_pcl[1] = msg_pcl->data;
+            
+
+
+            my_point_cloud_guess = "onion";
+        }
+
         bool respondToGameQuery(rws2018_msgs::GameQuery::Request  &req,
                     rws2018_msgs::GameQuery::Response &res)
         {
             ROS_WARN("I am %s and I am responding to a service request!", name.c_str());
-            res.resposta = "banana";
+            res.resposta = my_point_cloud_guess;
             return true;
         }  
 
