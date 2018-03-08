@@ -10,6 +10,7 @@
 #include <rws2018_libs/team.h>
 
 #include <rws2018_msgs/MakeAPlay.h>
+#include <rws2018_msgs/GameQuery.h>
 #include <visualization_msgs/Marker.h>
 
 #define DEFAULT_TIME 0.1
@@ -97,6 +98,7 @@ namespace rws_jmota
         boost::shared_ptr<ros::Subscriber> sub;
         boost::shared_ptr<ros::Publisher> pub;
         boost::shared_ptr<ros::Publisher> pub2;
+        boost::shared_ptr<ros::ServiceServer> game_query_srv;
         tf::Transform transform;    //declare the transformation object
         tf::TransformListener listener;
         
@@ -135,7 +137,7 @@ namespace rws_jmota
             }
 
             sub = boost::shared_ptr<ros::Subscriber> (new ros::Subscriber());
-            *sub = n.subscribe("/make_a_play", 100, &MyPlayer::move, this);
+            *sub = n.subscribe("/make_a_play", 100, &MyPlayer::move, this); //fazer as callbacks do move
 
             pub = boost::shared_ptr<ros::Publisher> (new ros::Publisher());   
             *pub = n.advertise<visualization_msgs::Marker>("/bocas", 0);
@@ -143,6 +145,10 @@ namespace rws_jmota
             pub2 = boost::shared_ptr<ros::Publisher> (new ros::Publisher());   
             *pub2 = n.advertise<visualization_msgs::Marker>("/arena", 0);
             
+            game_query_srv = boost::shared_ptr<ros::ServiceServer> (new ros::ServiceServer());   
+            *game_query_srv = n.advertiseService("/" + name + "/game_query", &MyPlayer::respondToGameQuery, this); //fazer as callbacks do respondToGameQuery
+
+
             // move to a random place for the first time
             srand(5975*time(NULL));
             double rx = static_cast <float> (rand()) / static_cast <float> (RAND_MAX/5.0);
@@ -152,6 +158,13 @@ namespace rws_jmota
             printReport();
         }
 
+        bool respondToGameQuery(rws2018_msgs::GameQuery::Request  &req,
+                    rws2018_msgs::GameQuery::Response &res)
+        {
+            ROS_WARN("I am %s and I am responding to a service request!", name.c_str());
+            res.resposta = "banana";
+            return true;
+        }  
 
         void warp(double x, double y, double alfa)
         {
