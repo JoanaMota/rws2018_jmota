@@ -268,7 +268,7 @@ namespace rws_jmota
             marker.pose.position.x = 0.02;
             marker.pose.position.y = 0.02;
             marker.pose.orientation.w = 1.0;
-            marker.scale.z = 0.7;
+            marker.scale.z = 0.5;
             marker.color.a = 1.0; // Don't forget to set the alpha!
             marker.color.r = 0.0;
             marker.color.g = 1.0;
